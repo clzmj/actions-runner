@@ -22,6 +22,7 @@ just up
 | Command        | Description                              |
 |----------------|------------------------------------------|
 | `just new`     | Interactive wizard to add a new runner   |
+| `just modify`  | Modify CPU/memory limits for a runner    |
 | `just up`      | Generate compose file and start runners  |
 | `just down`    | Stop all runners                         |
 | `just restart`  | Regenerate and restart all runners       |
@@ -43,6 +44,7 @@ just up
 │   ├── generate.sh       # Generate docker-compose.yml
 │   ├── up.sh             # Generate + start runners
 │   ├── new.sh            # Interactive new runner setup
+│   ├── modify.sh         # Modify runner CPU/memory
 │   ├── logs.sh           # Interactive log viewer
 │   └── describe.sh       # Display runner configurations
 └── <runner-name>/        # One directory per runner

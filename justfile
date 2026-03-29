@@ -29,3 +29,6 @@ new:
 
 describe:
     bash scripts/describe.sh
+
+modify:
+    bash scripts/modify.sh
