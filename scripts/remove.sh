@@ -2,6 +2,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+source scripts/lib.sh
 
 BOLD='\033[1m'
 CYAN='\033[36m'
@@ -63,12 +64,15 @@ else
     echo "(Container ${container} not found — skipping docker steps)"
 fi
 
+# Get the actual RUNNER_NAME from .env for data path
+runner_name="$(grep -E "^RUNNER_NAME=" "${runner}/.env" 2>/dev/null | head -1 | cut -d= -f2- | xargs)" || runner_name="$runner"
+
 # Remove directory
 echo "Removing directory ${runner}/..."
 rm -rf "${runner}"
 
 echo ""
 echo -e "${GREEN}✓${NC} Runner ${CYAN}${runner}${NC} removed."
-echo -e "${GRAY}Note: runner data in /runner/data/ was NOT deleted.${NC}"
-echo -e "${GRAY}To remove it: sudo rm -rf /runner/data/<RUNNER_NAME>${NC}"
+echo -e "${GRAY}Note: runner data was NOT deleted.${NC}"
+echo -e "${GRAY}To remove it: sudo rm -rf /runner/data/${runner_name}${NC}"
 echo ""

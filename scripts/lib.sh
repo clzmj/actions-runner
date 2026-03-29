@@ -65,3 +65,62 @@ load_runner_env() {
     # Apply defaults
     RUNNER_WORKDIR="${RUNNER_WORKDIR:-/tmp/runner/${RUNNER_NAME}}"
 }
+
+# Multi-select from a list with simple interface
+# Usage: select_items "label" "items"
+# Input: items as space-separated string
+# Sets globals: SELECTED_ITEMS (array of chosen items), SELECTED_INDICES (array of indices)
+select_items() {
+    local label="$1"
+    local items_str="$2"
+
+    # Convert string to array
+    read -ra items <<< "$items_str"
+
+    if [[ ${#items[@]} -eq 0 ]]; then
+        return 1
+    fi
+
+    echo "Select $label:"
+    for i in "${!items[@]}"; do
+        printf "  %d) %s\n" $((i+1)) "${items[$i]}"
+    done
+    echo ""
+
+    # Get selection
+    while true; do
+        read -rp "Enter numbers (comma/space-separated) or 'all', or Ctrl-C to cancel: " selection
+
+        SELECTED_ITEMS=()
+        SELECTED_INDICES=()
+
+        # Check for "all"
+        if [[ "$selection" == "all" ]]; then
+            SELECTED_ITEMS=("${items[@]}")
+            for ((i=0; i<${#items[@]}; i++)); do
+                SELECTED_INDICES+=($i)
+            done
+            return 0
+        fi
+
+        # Parse comma or space-separated numbers
+        local valid=1
+        local numbers=$(echo "$selection" | tr ',' ' ' | tr -s ' ')
+
+        for num in $numbers; do
+            if [[ "$num" =~ ^[0-9]+$ ]] && [[ "$num" -ge 1 ]] && [[ "$num" -le ${#items[@]} ]]; then
+                SELECTED_ITEMS+=("${items[$((num - 1))]}")
+                SELECTED_INDICES+=($(( num - 1 )))
+            else
+                valid=0
+                break
+            fi
+        done
+
+        if [[ $valid -eq 1 && ${#SELECTED_ITEMS[@]} -gt 0 ]]; then
+            return 0
+        fi
+
+        echo "Invalid input. Please enter numbers (1-${#items[@]}) separated by commas/spaces, or 'all'."
+    done
+}
