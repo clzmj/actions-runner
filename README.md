@@ -27,6 +27,7 @@ just up
 | `just restart`  | Regenerate and restart all runners       |
 | `just status`  | Show running containers                  |
 | `just logs`    | Interactive log viewer                   |
+| `just describe`| List all runners with their configs      |
 | `just validate`| Check all `.env` files for required vars |
 | `just generate`| Regenerate `docker-compose.yml`          |
 
@@ -42,7 +43,8 @@ just up
 │   ├── generate.sh       # Generate docker-compose.yml
 │   ├── up.sh             # Generate + start runners
 │   ├── new.sh            # Interactive new runner setup
-│   └── logs.sh           # Interactive log viewer
+│   ├── logs.sh           # Interactive log viewer
+│   └── describe.sh       # Display runner configurations
 └── <runner-name>/        # One directory per runner
     └── .env              # Runner configuration (git-ignored)
 ```
