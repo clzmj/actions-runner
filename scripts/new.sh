@@ -52,7 +52,8 @@ if [[ "$RUNNER_SCOPE" == "org" ]]; then
             1)
                 echo ""
                 echo "Get your token from: https://github.com/organizations/${ORG_NAME}/settings/actions/runners/new"
-                read -rp "Runner token: " RUNNER_TOKEN
+                read_sensitive "Runner token (Press Tab to reveal): "
+                RUNNER_TOKEN="$SENSITIVE_INPUT"
                 if [[ -z "$RUNNER_TOKEN" ]]; then
                     echo "Error: runner token cannot be empty" >&2
                     exit 1
@@ -64,7 +65,8 @@ if [[ "$RUNNER_SCOPE" == "org" ]]; then
                 echo ""
                 echo "Get a PAT from: https://github.com/settings/tokens"
                 echo "Scopes: admin:org"
-                read -rp "Access token (PAT): " ACCESS_TOKEN
+                read_sensitive "Access token / PAT (Press Tab to reveal): "
+                ACCESS_TOKEN="$SENSITIVE_INPUT"
                 if [[ -z "$ACCESS_TOKEN" ]]; then
                     echo "Error: access token cannot be empty" >&2
                     exit 1
@@ -87,11 +89,13 @@ else
     # Step 4: Runner token (short-lived for repo scope)
     echo ""
     echo "Get your token from: ${REPO_URL}/settings/actions/runners/new"
-    read -rp "Runner token: " RUNNER_TOKEN
+    read_sensitive "Runner token (Press Tab to reveal): "
+    RUNNER_TOKEN="$SENSITIVE_INPUT"
     if [[ -z "$RUNNER_TOKEN" ]]; then
         echo "Error: token cannot be empty" >&2
         exit 1
     fi
+    ACCESS_TOKEN=""
 fi
 
 # Step 5: Runner name
