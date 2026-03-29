@@ -20,10 +20,6 @@ down:
 restart:
     bash scripts/restart.sh
 
-# Show running containers with status and uptime
-status:
-    bash scripts/status.sh
-
 # Interactive: follow logs from a runner (single or all)
 logs:
     bash scripts/logs.sh
