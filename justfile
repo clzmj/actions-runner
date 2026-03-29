@@ -26,3 +26,6 @@ logs:
 
 new:
     bash scripts/new.sh
+
+describe:
+    bash scripts/describe.sh
