@@ -16,7 +16,7 @@ restart:
     bash scripts/restart.sh
 
 status:
-    docker ps --filter name=runner- --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.RunningFor}}"
+    bash scripts/status.sh
 
 logs:
     bash scripts/logs.sh

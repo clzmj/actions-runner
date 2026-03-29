@@ -48,6 +48,7 @@ just describe
 │   ├── restart.sh        # Interactive: restart all or one runner
 │   ├── modify.sh         # Modify runner CPU/memory
 │   ├── remove.sh         # Interactive: delete a runner
+│   ├── status.sh         # Show running containers
 │   ├── logs.sh           # Interactive log viewer
 │   └── describe.sh       # Display runner configurations
 └── <runner-name>/        # One directory per runner
