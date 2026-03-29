@@ -44,21 +44,9 @@ else
     fi
 
     echo ""
-    echo "Select runner to restart:"
-    for i in "${!runners[@]}"; do
-        echo "  $((i+1))) runner-${runners[$i]}"
-    done
-    echo ""
-
-    while true; do
-        read -rp "Choose [1-${#runners[@]}]: " selection
-        if [[ "$selection" =~ ^[0-9]+$ ]] && [[ "$selection" -ge 1 ]] && [[ "$selection" -le ${#runners[@]} ]]; then
-            break
-        fi
-        echo -e "${RED}Invalid selection${NC}"
-    done
-
-    dirname="${runners[$((selection-1))]}"
+    runners_str="${runners[*]}"
+    select_one "runner to restart" "$runners_str"
+    dirname="$SELECTED_ITEM"
     container="runner-${dirname}"
     env_file="${dirname}/.env"
 

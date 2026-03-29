@@ -66,6 +66,36 @@ load_runner_env() {
     RUNNER_WORKDIR="${RUNNER_WORKDIR:-/tmp/runner/${RUNNER_NAME}}"
 }
 
+# Single-select from a list
+# Usage: select_one "label" "items"
+# Input: items as space-separated string
+# Sets global: SELECTED_ITEM (the chosen item)
+select_one() {
+    local label="$1"
+    local items_str="$2"
+
+    read -ra items <<< "$items_str"
+
+    if [[ ${#items[@]} -eq 0 ]]; then
+        return 1
+    fi
+
+    echo "Select $label:"
+    for i in "${!items[@]}"; do
+        printf "  %d) %s\n" $((i+1)) "${items[$i]}"
+    done
+    echo ""
+
+    while true; do
+        read -rp "Enter number (1-${#items[@]}): " selection
+        if [[ "$selection" =~ ^[0-9]+$ ]] && [[ "$selection" -ge 1 ]] && [[ "$selection" -le ${#items[@]} ]]; then
+            SELECTED_ITEM="${items[$((selection - 1))]}"
+            return 0
+        fi
+        echo "Invalid selection. Please enter a number between 1 and ${#items[@]}."
+    done
+}
+
 # Multi-select from a list with simple interface
 # Usage: select_items "label" "items"
 # Input: items as space-separated string

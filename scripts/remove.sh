@@ -25,21 +25,10 @@ fi
 echo ""
 echo -e "${CYAN}${BOLD}Remove Runner${NC}"
 echo ""
-echo -e "${GRAY}Available runners:${NC}"
-for i in "${!runners[@]}"; do
-    printf "${GRAY}%2d${NC}. %s\n" $((i+1)) "${runners[$i]}"
-done
-echo ""
 
-while true; do
-    read -rp "Select runner to remove (1-${#runners[@]}): " selection
-    if [[ "$selection" =~ ^[0-9]+$ ]] && [[ "$selection" -ge 1 ]] && [[ "$selection" -le ${#runners[@]} ]]; then
-        break
-    fi
-    echo -e "${RED}Invalid selection${NC}"
-done
-
-runner="${runners[$((selection-1))]}"
+runners_str="${runners[*]}"
+select_one "runner to remove" "$runners_str"
+runner="$SELECTED_ITEM"
 container="runner-${runner}"
 
 echo ""

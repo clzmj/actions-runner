@@ -2,6 +2,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+source scripts/lib.sh
 
 runners=()
 while IFS= read -r line; do
@@ -13,35 +14,25 @@ if [[ ${#runners[@]} -eq 0 ]]; then
     exit 1
 fi
 
-echo "Select a runner to follow logs:"
 echo ""
-echo "  0) all runners"
-for i in "${!runners[@]}"; do
-    echo "  $((i + 1))) runner-${runners[$i]}"
-done
-echo ""
-
-while true; do
-    read -rp "Choose [0-${#runners[@]}]: " choice
-    if [[ "$choice" =~ ^[0-9]+$ ]] && [[ "$choice" -ge 0 ]] && [[ "$choice" -le ${#runners[@]} ]]; then
-        break
-    fi
-    echo "Please enter a number between 0 and ${#runners[@]}"
-done
+runners_str="${runners[*]}"
+select_items "runner to follow (or 'all')" "$runners_str"
 
 echo ""
-if [[ "$choice" -eq 0 ]]; then
+
+# Check if all runners were selected
+if [[ ${#SELECTED_ITEMS[@]} -eq ${#runners[@]} ]]; then
     echo "Following all runners..."
     # docker logs cannot multiplex; use a loop with & and wait
     pids=()
-    for r in "${runners[@]}"; do
+    for r in "${SELECTED_ITEMS[@]}"; do
         docker logs -f "runner-${r}" --timestamps 2>&1 | sed "s/^/[runner-${r}] /" &
         pids+=($!)
     done
     trap 'kill "${pids[@]}" 2>/dev/null; exit' INT TERM
     wait
 else
-    r="${runners[$((choice - 1))]}"
+    r="${SELECTED_ITEMS[0]}"
     echo "Following runner-${r}..."
     docker logs -f "runner-${r}"
 fi

@@ -29,23 +29,9 @@ echo ""
 echo -e "${CYAN}${BOLD}Modify Runner Resources${NC}"
 echo ""
 
-# Show available runners
-echo -e "${GRAY}Available runners:${NC}"
-for i in "${!runners[@]}"; do
-    printf "${GRAY}%2d${NC}. %s\n" $((i+1)) "${runners[$i]}"
-done
-echo ""
-
-# Get user selection
-while true; do
-    read -p "Select runner (1-${#runners[@]}): " selection
-    if [[ "$selection" =~ ^[0-9]+$ ]] && [ "$selection" -ge 1 ] && [ "$selection" -le ${#runners[@]} ]; then
-        break
-    fi
-    echo -e "${RED}Invalid selection${NC}"
-done
-
-runner="${runners[$((selection-1))]}"
+runners_str="${runners[*]}"
+select_one "runner to modify" "$runners_str"
+runner="$SELECTED_ITEM"
 env_file="${runner}/.env"
 
 # Load current values
