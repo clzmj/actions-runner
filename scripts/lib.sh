@@ -3,7 +3,7 @@
 # Shared function to load runner .env file and parse all config values
 # Usage: load_runner_env "/path/to/.env"
 # Sets globals: REPO_URL RUNNER_TOKEN RUNNER_SCOPE RUNNER_NAME LABELS
-#               CPU_LIMIT MEMORY_LIMIT RUNNER_WORKDIR
+#               CPU_LIMIT MEMORY_LIMIT RUNNER_WORKDIR ORG_NAME ACCESS_TOKEN
 
 load_runner_env() {
     local envfile="$1"
@@ -11,7 +11,9 @@ load_runner_env() {
     # Initialize with defaults
     REPO_URL=""
     RUNNER_TOKEN=""
+    ACCESS_TOKEN=""
     RUNNER_SCOPE=""
+    ORG_NAME=""
     RUNNER_NAME=""
     LABELS=""
     CPU_LIMIT="1.0"
@@ -32,7 +34,9 @@ load_runner_env() {
         case "$key" in
             REPO_URL)       REPO_URL="$val" ;;
             RUNNER_TOKEN)   RUNNER_TOKEN="$val" ;;
+            ACCESS_TOKEN)   ACCESS_TOKEN="$val" ;;
             RUNNER_SCOPE)   RUNNER_SCOPE="$val" ;;
+            ORG_NAME)       ORG_NAME="$val" ;;
             RUNNER_NAME)    RUNNER_NAME="$val" ;;
             LABELS)         LABELS="$val" ;;
             CPU_LIMIT)      CPU_LIMIT="$val" ;;

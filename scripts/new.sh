@@ -40,18 +40,43 @@ if [[ "$RUNNER_SCOPE" == "org" ]]; then
         echo "Error: organization name cannot be empty" >&2
         exit 1
     fi
-    REPO_URL="https://github.com/${ORG_NAME}"
 
-    # Step 4: Access token (PAT for org scope)
+    # Step 4: Auth method for org scope
     echo ""
-    echo "Get a Personal Access Token from: https://github.com/settings/tokens"
-    echo "Scopes: admin:org (or organization runner management)"
-    read -rp "Access token (PAT): " ACCESS_TOKEN
-    if [[ -z "$ACCESS_TOKEN" ]]; then
-        echo "Error: access token cannot be empty" >&2
-        exit 1
-    fi
-    RUNNER_TOKEN="$ACCESS_TOKEN"
+    echo "Authentication method:"
+    echo "  1) Runner token  — short-lived, from org settings UI"
+    echo "  2) Access token  — PAT, auto-refreshes (recommended)"
+    while true; do
+        read -rp "Choose [1/2]: " auth_method
+        case "$auth_method" in
+            1)
+                echo ""
+                echo "Get your token from: https://github.com/organizations/${ORG_NAME}/settings/actions/runners/new"
+                read -rp "Runner token: " RUNNER_TOKEN
+                if [[ -z "$RUNNER_TOKEN" ]]; then
+                    echo "Error: runner token cannot be empty" >&2
+                    exit 1
+                fi
+                ACCESS_TOKEN=""
+                break
+                ;;
+            2)
+                echo ""
+                echo "Get a PAT from: https://github.com/settings/tokens"
+                echo "Scopes: admin:org"
+                read -rp "Access token (PAT): " ACCESS_TOKEN
+                if [[ -z "$ACCESS_TOKEN" ]]; then
+                    echo "Error: access token cannot be empty" >&2
+                    exit 1
+                fi
+                RUNNER_TOKEN=""
+                break
+                ;;
+            *)
+                echo "Please enter 1 or 2"
+                ;;
+        esac
+    done
 else
     read -rp "Repository URL (e.g. https://github.com/user/repo): " REPO_URL
     if [[ -z "$REPO_URL" ]]; then
@@ -94,7 +119,27 @@ RUNNER_WORKDIR="${RUNNER_WORKDIR:-/tmp/runner/${RUNNER_NAME}}"
 
 # Write .env
 mkdir -p "$name"
-cat > "$name/.env" <<EOF
+
+# Build .env content based on scope
+if [[ "$RUNNER_SCOPE" == "org" ]]; then
+    cat > "$name/.env" <<EOF
+RUNNER_SCOPE=${RUNNER_SCOPE}
+ORG_NAME=${ORG_NAME}
+RUNNER_NAME=${RUNNER_NAME}
+LABELS=${LABELS}
+RUNNER_WORKDIR=${RUNNER_WORKDIR}
+CPU_LIMIT=${CPU_LIMIT}
+MEMORY_LIMIT=${MEMORY_LIMIT}
+DISABLE_AUTOMATIC_DEREGISTRATION=true
+EOF
+    if [[ -n "$RUNNER_TOKEN" ]]; then
+        echo "RUNNER_TOKEN=${RUNNER_TOKEN}" >> "$name/.env"
+    fi
+    if [[ -n "$ACCESS_TOKEN" ]]; then
+        echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> "$name/.env"
+    fi
+else
+    cat > "$name/.env" <<EOF
 REPO_URL=${REPO_URL}
 RUNNER_TOKEN=${RUNNER_TOKEN}
 RUNNER_SCOPE=${RUNNER_SCOPE}
@@ -105,13 +150,23 @@ CPU_LIMIT=${CPU_LIMIT}
 MEMORY_LIMIT=${MEMORY_LIMIT}
 DISABLE_AUTOMATIC_DEREGISTRATION=true
 EOF
+fi
 
 echo ""
 echo "=== Runner configured ==="
 echo "  Directory:  ${name}/"
 echo "  Name:       ${RUNNER_NAME}"
 echo "  Scope:      ${RUNNER_SCOPE}"
-echo "  URL:        ${REPO_URL}"
+if [[ "$RUNNER_SCOPE" == "org" ]]; then
+    echo "  Org:        ${ORG_NAME}"
+    if [[ -n "$RUNNER_TOKEN" ]]; then
+        echo "  Auth:       Runner token (short-lived)"
+    else
+        echo "  Auth:       Access token (PAT)"
+    fi
+else
+    echo "  URL:        ${REPO_URL}"
+fi
 echo "  Labels:     ${LABELS}"
 echo "  CPU:        ${CPU_LIMIT} cores"
 echo "  Memory:     ${MEMORY_LIMIT}"
