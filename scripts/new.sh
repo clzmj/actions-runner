@@ -32,25 +32,41 @@ while true; do
     esac
 done
 
-# Step 3: Repo/Org URL
+# Step 3: Org name or Repo URL + Token
 echo ""
 if [[ "$RUNNER_SCOPE" == "org" ]]; then
-    read -rp "Organization URL (e.g. https://github.com/my-org): " REPO_URL
+    read -rp "Organization name (e.g. my-org): " ORG_NAME
+    if [[ -z "$ORG_NAME" ]]; then
+        echo "Error: organization name cannot be empty" >&2
+        exit 1
+    fi
+    REPO_URL="https://github.com/${ORG_NAME}"
+
+    # Step 4: Access token (PAT for org scope)
+    echo ""
+    echo "Get a Personal Access Token from: https://github.com/settings/tokens"
+    echo "Scopes: admin:org (or organization runner management)"
+    read -rp "Access token (PAT): " ACCESS_TOKEN
+    if [[ -z "$ACCESS_TOKEN" ]]; then
+        echo "Error: access token cannot be empty" >&2
+        exit 1
+    fi
+    RUNNER_TOKEN="$ACCESS_TOKEN"
 else
     read -rp "Repository URL (e.g. https://github.com/user/repo): " REPO_URL
-fi
-if [[ -z "$REPO_URL" ]]; then
-    echo "Error: URL cannot be empty" >&2
-    exit 1
-fi
+    if [[ -z "$REPO_URL" ]]; then
+        echo "Error: URL cannot be empty" >&2
+        exit 1
+    fi
 
-# Step 4: Runner token
-echo ""
-echo "Get your token from: ${REPO_URL}/settings/actions/runners/new"
-read -rp "Runner token: " RUNNER_TOKEN
-if [[ -z "$RUNNER_TOKEN" ]]; then
-    echo "Error: token cannot be empty" >&2
-    exit 1
+    # Step 4: Runner token (short-lived for repo scope)
+    echo ""
+    echo "Get your token from: ${REPO_URL}/settings/actions/runners/new"
+    read -rp "Runner token: " RUNNER_TOKEN
+    if [[ -z "$RUNNER_TOKEN" ]]; then
+        echo "Error: token cannot be empty" >&2
+        exit 1
+    fi
 fi
 
 # Step 5: Runner name
