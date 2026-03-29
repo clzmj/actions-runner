@@ -12,6 +12,7 @@ GRAY='\033[90m'
 NC='\033[0m'
 
 cd "$(dirname "$0")/.."
+source scripts/lib.sh
 
 # Find all runners
 runners=()
@@ -47,17 +48,8 @@ done
 runner="${runners[$((selection-1))]}"
 env_file="${runner}/.env"
 
-# Read current values
-CPU_LIMIT="1.0"
-MEMORY_LIMIT="1g"
-
-while IFS='=' read -r key val; do
-    [[ -z "$key" || "$key" =~ ^# ]] && continue
-    key="$(echo "$key" | xargs)"
-    val="$(echo "$val" | sed 's/#.*//' | xargs)"
-    [[ "$key" == "CPU_LIMIT" ]] && CPU_LIMIT="$val"
-    [[ "$key" == "MEMORY_LIMIT" ]] && MEMORY_LIMIT="$val"
-done < "$env_file"
+# Load current values
+load_runner_env "$env_file"
 
 echo ""
 echo -e "${CYAN}${BOLD}${runner}${NC}"
@@ -88,7 +80,7 @@ while true; do
 done
 
 echo ""
-echo -e "${GRAY}Updating...${NC}"
+echo -e "${GRAY}Applying changes to ${CYAN}runner-${runner}${GRAY}...${NC}"
 
 # Update .env file
 if grep -q "^CPU_LIMIT=" "$env_file"; then
@@ -103,12 +95,38 @@ else
     echo "MEMORY_LIMIT=$new_memory" >> "$env_file"
 fi
 
-# Regenerate docker-compose.yml
-bash scripts/generate.sh > /dev/null
+# Re-read updated env to get all values for docker run
+load_runner_env "$env_file"
 
-echo -e "${GREEN}✓${NC} Updated ${CYAN}${runner}${NC}"
+container="runner-${runner}"
+
+# Stop and remove the existing container
+if docker inspect "$container" &>/dev/null; then
+    docker stop "$container" 2>/dev/null || true
+    docker rm "$container" 2>/dev/null || true
+fi
+
+# Create data directory if needed
+if [[ -n "$RUNNER_NAME" ]]; then
+    mkdir -p "/runner/data/${RUNNER_NAME}"
+fi
+
+# Recreate the container with new resource limits
+docker run -d \
+    --name "$container" \
+    --restart unless-stopped \
+    --env-file "${runner}/.env" \
+    --env "RUNNER_WORKDIR=${RUNNER_WORKDIR}" \
+    --env "CONFIGURED_ACTIONS_RUNNER_FILES_DIR=/runner/data/${RUNNER_NAME}" \
+    --cpus "${CPU_LIMIT}" \
+    --memory "${MEMORY_LIMIT}" \
+    --security-opt label:disable \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v "/runner/data/${RUNNER_NAME}:/runner/data/${RUNNER_NAME}" \
+    -v "${RUNNER_WORKDIR}:${RUNNER_WORKDIR}" \
+    myoung34/github-runner:latest
+
+echo -e "${GREEN}✓${NC} ${CYAN}runner-${runner}${NC} restarted with new limits"
 echo -e "  CPU:    ${new_cpu} cores"
 echo -e "  Memory: ${new_memory}"
-echo ""
-echo -e "${YELLOW}Run 'just restart' to apply changes${NC}"
 echo ""

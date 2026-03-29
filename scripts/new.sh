@@ -2,6 +2,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+source scripts/lib.sh
 
 echo "=== New GitHub Actions Runner Setup ==="
 echo ""
@@ -100,4 +101,27 @@ echo "  CPU:        ${CPU_LIMIT} cores"
 echo "  Memory:     ${MEMORY_LIMIT}"
 echo "  Workdir:    ${RUNNER_WORKDIR}"
 echo ""
-echo "Run 'just up' to start all runners."
+
+# Validate configuration
+bash scripts/validate.sh
+
+# Create data dir
+mkdir -p "/runner/data/${RUNNER_NAME}"
+
+container="runner-${name}"
+echo "Starting ${container}..."
+docker run -d \
+    --name "$container" \
+    --restart unless-stopped \
+    --env-file "${name}/.env" \
+    --env "RUNNER_WORKDIR=${RUNNER_WORKDIR}" \
+    --env "CONFIGURED_ACTIONS_RUNNER_FILES_DIR=/runner/data/${RUNNER_NAME}" \
+    --cpus "${CPU_LIMIT}" \
+    --memory "${MEMORY_LIMIT}" \
+    --security-opt label:disable \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v "/runner/data/${RUNNER_NAME}:/runner/data/${RUNNER_NAME}" \
+    -v "${RUNNER_WORKDIR}:${RUNNER_WORKDIR}" \
+    myoung34/github-runner:latest
+
+echo "Runner started. Use 'just status' to confirm."

@@ -6,20 +6,17 @@ help:
 validate:
     bash scripts/validate.sh
 
-generate:
-    bash scripts/generate.sh
-
 up:
     bash scripts/up.sh
 
 down:
-    docker compose down
+    bash scripts/down.sh
 
-restart: generate
-    docker compose restart
+restart:
+    bash scripts/restart.sh
 
 status:
-    docker compose ps
+    docker ps --filter name=runner- --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.RunningFor}}"
 
 logs:
     bash scripts/logs.sh
@@ -32,3 +29,6 @@ describe:
 
 modify:
     bash scripts/modify.sh
+
+remove:
+    bash scripts/remove.sh

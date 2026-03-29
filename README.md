@@ -1,36 +1,36 @@
 # GitHub Actions Self-Hosted Runner Manager
 
-Manage multiple GitHub Actions self-hosted runners on a single machine using Docker Compose.
+Manage multiple GitHub Actions self-hosted runners on a single machine with isolated, independent Docker containers.
 
-Each runner is defined by a simple `.env` file in its own directory. A single `docker-compose.yml` is auto-generated from all runner configs.
+Each runner is defined by a simple `.env` file in its own directory. Containers are managed independently — modifying or restarting one runner never affects others.
 
 ## Quick Start
 
 ```bash
-# 1. Install dependencies (Docker, Docker Compose, just)
+# 1. Install dependencies (Docker, just)
 ./setup.sh
 
-# 2. Create a new runner (interactive)
+# 2. Create a new runner (interactive — starts immediately)
 just new
 
-# 3. Start all runners
-just up
+# 3. View all runners
+just describe
 ```
 
 ## Commands
 
 | Command        | Description                              |
 |----------------|------------------------------------------|
-| `just new`     | Interactive wizard to add a new runner   |
-| `just modify`  | Modify CPU/memory limits for a runner    |
-| `just up`      | Generate compose file and start runners  |
-| `just down`    | Stop all runners                         |
-| `just restart`  | Regenerate and restart all runners       |
+| `just new`     | Interactive wizard to add a new runner (starts immediately) |
+| `just up`      | Ensure all configured runners are running (idempotent) |
+| `just down`    | Interactive: select which runners to stop |
+| `just restart` | Interactive: restart all runners or a specific one |
 | `just status`  | Show running containers                  |
-| `just logs`    | Interactive log viewer                   |
-| `just describe`| List all runners with their configs      |
+| `just logs`    | Interactive log viewer (single or all)   |
+| `just describe`| List all runners with live status        |
+| `just modify`  | Interactive: change CPU/memory and restart runner |
+| `just remove`  | Interactive: permanently delete a runner |
 | `just validate`| Check all `.env` files for required vars |
-| `just generate`| Regenerate `docker-compose.yml`          |
 
 ## File Structure
 
@@ -38,13 +38,16 @@ just up
 ├── setup.sh              # Install dependencies
 ├── justfile              # Task runner commands
 ├── .env.template         # Template for new runners
-├── .gitignore            # Excludes .env files and docker-compose.yml
+├── .gitignore            # Excludes .env files
 ├── scripts/
+│   ├── lib.sh            # Shared config loader
 │   ├── validate.sh       # Validate runner .env files
-│   ├── generate.sh       # Generate docker-compose.yml
-│   ├── up.sh             # Generate + start runners
-│   ├── new.sh            # Interactive new runner setup
+│   ├── up.sh             # Start all configured runners
+│   ├── down.sh           # Interactive: stop selected runners
+│   ├── new.sh            # Interactive new runner setup + start
+│   ├── restart.sh        # Interactive: restart all or one runner
 │   ├── modify.sh         # Modify runner CPU/memory
+│   ├── remove.sh         # Interactive: delete a runner
 │   ├── logs.sh           # Interactive log viewer
 │   └── describe.sh       # Display runner configurations
 └── <runner-name>/        # One directory per runner
@@ -66,6 +69,15 @@ DISABLE_AUTOMATIC_DEREGISTRATION=true
 ```
 
 Get your runner token from: **Settings > Actions > Runners > New self-hosted runner**
+
+## Key Design: Independent Containers
+
+Each runner runs as a standalone Docker container named `runner-<dirname>`. This means:
+
+- **Isolation**: Adding, modifying, or restarting one runner never affects others.
+- **No service mesh**: No docker-compose orchestration layer. Containers manage themselves.
+- **Safe updates**: `just modify` only cycles the target runner. `just up` is idempotent — it only starts runners that are not already running.
+- **Interactive control**: Commands like `just down`, `just remove`, `just restart-one` use guided flows to prevent accidental changes.
 
 ## Requirements
 
