@@ -1,48 +1,20 @@
 #!/bin/bash
 
-# Read sensitive input (token/password) with asterisks
-# Shows * for each character typed. Press Tab to reveal the input.
+# Read sensitive input (token/password) with hidden input
+# Input is hidden as user types. Shows asterisks for verification after Enter.
 # Usage: read_sensitive "prompt" — sets global $SENSITIVE_INPUT
 read_sensitive() {
     local prompt="$1"
-    local input=""
-
     printf "%s" "$prompt"
 
-    # Turn off echo (hide what user types)
-    stty -echo 2>/dev/null || true
+    # Read input without echo (hidden)
+    read -rs input
+    printf "\n"
 
-    local char
-    while IFS= read -r -n 1 char 2>/dev/null || [[ -n "$char" ]]; do
-        case "$char" in
-            $'\t')  # Tab — reveal what was typed
-                stty echo 2>/dev/null || true
-                printf "\n"
-                printf "You typed: %s\n" "$input"
-                printf "%s" "$prompt"
-                stty -echo 2>/dev/null || true
-                ;;
-            $'\n'|'')  # Enter or EOF — done
-                stty echo 2>/dev/null || true
-                [[ -n "$char" ]] && printf "\n"
-                SENSITIVE_INPUT="$input"
-                return 0
-                ;;
-            $'\177')  # Backspace (ASCII 127)
-                if [[ ${#input} -gt 0 ]]; then
-                    input="${input%?}"
-                    printf "\b \b"
-                fi
-                ;;
-            *)  # Regular character — add to input, show asterisk
-                input+="$char"
-                printf "*"
-                ;;
-        esac
-    done
+    # Show verification (asterisks matching length)
+    printf "  (entered: %s)\n" "$(printf '*%.0s' $(seq 1 ${#input}))"
 
-    # Restore echo
-    stty echo 2>/dev/null || true
+    SENSITIVE_INPUT="$input"
 }
 
 # Shared function to load runner .env file and parse all config values
