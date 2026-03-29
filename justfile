@@ -1,4 +1,4 @@
-default: help
+default: describe
 
 # Show this help message
 help:
