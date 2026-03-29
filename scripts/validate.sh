@@ -2,6 +2,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+source scripts/lib.sh
 
 errors=0
 
@@ -44,9 +45,9 @@ for envfile in */.env; do
     fi
 
     if [[ ${#missing[@]} -eq 0 ]]; then
-        echo "[OK] $dirname"
+        echo -e "${GREEN}[✓]${NC} $dirname"
     else
-        echo "[ERROR] $dirname — missing: ${missing[*]}"
+        echo -e "${RED}[✗]${NC} $dirname — missing: ${missing[*]}"
         errors=1
     fi
 done

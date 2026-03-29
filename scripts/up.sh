@@ -20,17 +20,17 @@ for envfile in */.env; do
 
     # Skip if already running
     if docker inspect --format '{{.State.Running}}' "$container" 2>/dev/null | grep -q '^true$'; then
-        echo "[skip] $container is already running"
+        echo -e "${GRAY}[skip]${NC} $container is already running"
         continue
     fi
 
     # Remove stopped/exited container with same name (so we can recreate)
     if docker inspect "$container" &>/dev/null; then
-        echo "[remove] Removing stopped container $container"
+        echo -e "${GRAY}[remove]${NC} Removing stopped container $container"
         docker rm "$container"
     fi
 
-    echo "[start] $container"
+    echo -e "${GRAY}[start]${NC} $container"
     docker run -d \
         --name "$container" \
         --restart unless-stopped \

@@ -4,7 +4,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 source scripts/lib.sh
 
-echo "=== New GitHub Actions Runner Setup ==="
+echo ""
+echo -e "${CYAN}${BOLD}New GitHub Actions Runner Setup${NC}"
 echo ""
 
 # Step 1: Runner scope
@@ -25,14 +26,14 @@ echo ""
 if [[ "$RUNNER_SCOPE" == "org" ]]; then
     read -rp "Organization name (e.g. my-org): " ORG_NAME
     if [[ -z "$ORG_NAME" ]]; then
-        echo "Error: organization name cannot be empty" >&2
+        echo -e "${RED}✗${NC} Organization name cannot be empty" >&2
         exit 1
     fi
     DEFAULT_RUNNER_NAME="$ORG_NAME"
 else
     read -rp "Repository URL (e.g. https://github.com/user/repo): " REPO_URL
     if [[ -z "$REPO_URL" ]]; then
-        echo "Error: URL cannot be empty" >&2
+        echo -e "${RED}✗${NC} Repository URL cannot be empty" >&2
         exit 1
     fi
     # Extract repo name from URL for default runner name
@@ -54,7 +55,7 @@ if [[ "$RUNNER_SCOPE" == "org" ]]; then
                 read_sensitive "Runner token: "
                 RUNNER_TOKEN="$SENSITIVE_INPUT"
                 if [[ -z "$RUNNER_TOKEN" ]]; then
-                    echo "Error: runner token cannot be empty" >&2
+                    echo -e "${RED}✗${NC} Runner token cannot be empty" >&2
                     exit 1
                 fi
                 ACCESS_TOKEN=""
@@ -67,7 +68,7 @@ if [[ "$RUNNER_SCOPE" == "org" ]]; then
                 read_sensitive "Access token (PAT): "
                 ACCESS_TOKEN="$SENSITIVE_INPUT"
                 if [[ -z "$ACCESS_TOKEN" ]]; then
-                    echo "Error: access token cannot be empty" >&2
+                    echo -e "${RED}✗${NC} Access token cannot be empty" >&2
                     exit 1
                 fi
                 RUNNER_TOKEN=""
@@ -83,7 +84,7 @@ else
     read_sensitive "Runner token: "
     RUNNER_TOKEN="$SENSITIVE_INPUT"
     if [[ -z "$RUNNER_TOKEN" ]]; then
-        echo "Error: token cannot be empty" >&2
+        echo -e "${RED}✗${NC} Runner token cannot be empty" >&2
         exit 1
     fi
     ACCESS_TOKEN=""
@@ -99,7 +100,7 @@ RUNNER_DIR="$RUNNER_NAME"
 
 # Check if directory already exists
 if [[ -d "$RUNNER_DIR" ]]; then
-    echo "Error: directory '$RUNNER_DIR' already exists" >&2
+    echo -e "${RED}✗${NC} Directory '$RUNNER_DIR' already exists" >&2
     exit 1
 fi
 
@@ -156,7 +157,7 @@ EOF
 fi
 
 echo ""
-echo "=== Runner configured ==="
+echo -e "${GREEN}✓${NC} ${CYAN}${BOLD}Runner Configured${NC}"
 echo "  Directory:  ${RUNNER_DIR}/"
 echo "  Name:       ${RUNNER_NAME}"
 echo "  Scope:      ${RUNNER_SCOPE}"

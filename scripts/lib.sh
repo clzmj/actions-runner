@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Color palette for consistent styling across all scripts
+BOLD='\033[1m'
+CYAN='\033[36m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+RED='\033[31m'
+GRAY='\033[90m'
+NC='\033[0m'
+
 # Read sensitive input (token/password) with hidden input
 # Input is hidden as user types. Shows asterisks for verification after Enter.
 # Usage: read_sensitive "prompt" — sets global $SENSITIVE_INPUT
