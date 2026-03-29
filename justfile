@@ -32,7 +32,7 @@ new:
 describe:
     bash scripts/describe.sh
 
-# Interactive: change CPU/memory limits and restart a runner
+# Interactive: edit any runner configuration and restart (scope, URL, tokens, name, etc.)
 modify:
     bash scripts/modify.sh
 

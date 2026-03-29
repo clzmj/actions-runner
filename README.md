@@ -27,7 +27,7 @@ just describe
 | `just restart` | Interactive: restart all runners or a specific one |
 | `just logs`    | Interactive log viewer (single or all)   |
 | `just describe`| List all runners with configuration and live status |
-| `just modify`  | Interactive: change CPU/memory limits and restart runner |
+| `just modify`  | Interactive: edit any runner config (scope, tokens, name, CPU/memory, etc.) |
 | `just remove`  | Interactive: permanently delete a runner |
 | `just validate`| Check all `.env` files for required variables |
 
